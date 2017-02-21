@@ -19,7 +19,7 @@ from setuptools import setup, find_packages
 
 def version():
     cur_dir = os.path.abspath(os.path.dirname(__file__))
-    with open(os.path.join(cur_dir, 'aiohttp_auth', '__init__.py'), 'r') as f:
+    with open(os.path.join(cur_dir, 'pymodm_motor', '__init__.py'), 'r') as f:
         try:
             ver = re.findall(r"^__version__ = '([^']+)'\r?$",
                              f.read(), re.M)[0]
