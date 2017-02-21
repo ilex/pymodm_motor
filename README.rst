@@ -13,12 +13,12 @@ functions and methods that actually work with database. So the most of
 `official PyMODM documentation`_ is fully compatible (see 
 `Differences between PyMODM_Motor and PyMODM`_ for details) with ``PyMODM_Motor`` 
 and can be browsed to learn more. You can also take a look at the simple 
-`blog example`_ built with `asyncio`_ an `AIOHTTP`_ asynchronous web framework.
+`blog example`_ built with `asyncio`_ and `AIOHTTP`_ asynchronous web framework.
 
 .. _PyMODM: https://pypi.python.org/pypi/pymodm
 .. _Motor: https://pypi.python.org/pypi/motor
 .. _official PyMODM documentation: http://pymodm.readthedocs.io/en/stable
-.. _blog example: https://github.com/ilex/pymodm_motor/tree/master/example
+.. _blog example: https://github.com/ilex/pymodm_motor/tree/develop/example/blog/aiohttp
 .. _asyncio: https://docs.python.org/3/library/asyncio.html
 .. _Tornado: https://pypi.python.org/pypi/tornado
 .. _AIOHTTP: https://pypi.python.org/pypi/aiohttp
@@ -33,7 +33,7 @@ At this moment you need to install ``pymodm`` as follow::
 
 And then install ``PyMODM_Motor`` using ``pip``::
     
-    pip install pymodm_motor
+    pip install https://github.com/ilex/pymodm_motor/archive/develop.zip 
 
 
 Differences between PyMODM_Motor and PyMODM
@@ -46,14 +46,15 @@ there are some differences due to asynchronous nature of ``PyMODM_Motor``:
    (note that each ``Motor*`` class derived from appropriate ``PyMODM`` class 
    and inherits most of their behavior):
     
-    ``pymodm_motor.MotorMongoModel`` in place of ``pymodm.MongoModel``
-    ``pymodm_motor.MotorEmbeddedMongoModel`` in place of ``pymodm.EmbeddedMongoModel``
-    ``pymodm_motor.MotorMongoModelMetaclass`` in place of ``pymodm.TopLevelMongoModelMetaclass``
-    ``pymodm_motor.MotorManager`` in place of ``pymodm.Manager``
-    ``pymodm_motor.MotorQuerySet`` in place of ``pymodm.QuerySet``
+   - ``pymodm_motor.MotorMongoModel`` in place of ``pymodm.MongoModel``
+   - ``pymodm_motor.MotorEmbeddedMongoModel`` in place of ``pymodm.EmbeddedMongoModel``
+   - ``pymodm_motor.MotorMongoModelMetaclass`` in place of ``pymodm.TopLevelMongoModelMetaclass``
+   - ``pymodm_motor.MotorManager`` in place of ``pymodm.Manager``
+   - ``pymodm_motor.MotorQuerySet`` in place of ``pymodm.QuerySet``
     
 2) Some methods and functions are coroutines (see `List of Coroutines`_) so 
    the should be called with ``await``.
+
    .. code-block:: python
 
         from pymodm_motor import fields, MotorMongoModel
@@ -69,6 +70,7 @@ there are some differences due to asynchronous nature of ``PyMODM_Motor``:
             
 3) There is no *auto dereferencing* in ``PyMODM_Motor`` use ``dereference`` 
    coroutine explicitly to dereference reference fields in model instance.
+
    .. code-block:: python
        
         from bson import ObjectId
@@ -127,11 +129,11 @@ there are some differences due to asynchronous nature of ``PyMODM_Motor``:
                 await BackupUser.objects.create_indexes()
 
 6) There are some additional parameters in ``connect`` function:
-    
-    - ``mongo_driver``: a string constant that specify which of the drivers to use
-      ``pymodm_motor.MOTOR_ASYNCIO_DRIVER`` or ``pymodm_motor.MOTOR_TORNADO_DRIVER``.
-    - ``kwargs``: will be passed to appropriate MotorClient. For example ``io_loop``
-      parameter can be specified to pass a specific loop.
+
+   - ``mongo_driver``: a string constant that specify which of the drivers to use
+     ``pymodm_motor.MOTOR_ASYNCIO_DRIVER`` or ``pymodm_motor.MOTOR_TORNADO_DRIVER``.
+   - ``kwargs``: will be passed to appropriate MotorClient. For example ``io_loop``
+     parameter can be specified to pass a specific loop.
 
 7) As there is no *auto indexes creation* ``connect`` can be called in any place but
    before any db operations are called.
@@ -180,7 +182,7 @@ there are some differences due to asynchronous nature of ``PyMODM_Motor``:
 
 9) A slice operator and getitem operator should be used with ``await``.
     
-    .. code-block:: python
+   .. code-block:: python
 
         from pymodm_motor import fields, MotorMongoModel
 
@@ -200,26 +202,26 @@ These functions and methods are coroutines or return awaitable:
 
 - ``pymodm_motor.dereference`` module:
 
-    - ``pymodm_motor.dereference.dereference``.
-    - ``pymodm_motor.dereference.dereference_id``.
+  - ``pymodm_motor.dereference.dereference``
+  - ``pymodm_motor.dereference.dereference_id``
 
 - ``pymodm_motor.MotorMongoModel`` class:
 
-    - ``pymodm_motor.MotorMongoModel.save``.
-    - ``pymodm_motor.MotorMongoModel.delete``.
-    - ``pymodm_motor.MotorMongoModel.refresh_from_db``.
+  - ``pymodm_motor.MotorMongoModel.save``
+  - ``pymodm_motor.MotorMongoModel.delete``
+  - ``pymodm_motor.MotorMongoModel.refresh_from_db``
 
 - ``pymodm_motor.MotorQuerySet`` class:
 
-    - ``pymodm_motor.MotorQuerySet.count``.
-    - ``pymodm_motor.MotorQuerySet.get``.
-    - ``pymodm_motor.MotorQuerySet.first``.
-    - ``pymodm_motor.MotorQuerySet.bulk_create``.
-    - ``pymodm_motor.MotorQuerySet.delete``.
-    - ``pymodm_motor.MotorQuerySet.update``.
-    - ``pymodm_motor.MotorQuerySet.to_list``.
-    - ``pymodm_motor.MotorQuerySet.create_indexes``.
-    - ``pymodm_motor.MotorQuerySet.__getitem__``.
+  - ``pymodm_motor.MotorQuerySet.count``
+  - ``pymodm_motor.MotorQuerySet.get``
+  - ``pymodm_motor.MotorQuerySet.first``
+  - ``pymodm_motor.MotorQuerySet.bulk_create``
+  - ``pymodm_motor.MotorQuerySet.delete``
+  - ``pymodm_motor.MotorQuerySet.update``
+  - ``pymodm_motor.MotorQuerySet.to_list``
+  - ``pymodm_motor.MotorQuerySet.create_indexes``
+  - ``pymodm_motor.MotorQuerySet.__getitem__``
 
 
 Example
