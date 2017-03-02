@@ -149,36 +149,6 @@ class MotorDereferenceTestCase:
             wrapper_list.wrapper[0].comments[0].post.title
         )
 
-    '''
-    @unittest_run_loop
-    async def _test_unhashable_id(self):
-        # Test that we can reference a model whose id type is unhashable
-        # e.g. a dict, list, etc.
-        class CardIdentity(MotorEmbeddedMongoModel):
-            HEARTS, DIAMONDS, SPADES, CLUBS = 0, 1, 2, 3
-
-            rank = fields.IntegerField(min_value=0, max_value=12)
-            suit = fields.IntegerField(
-                choices=(HEARTS, DIAMONDS, SPADES, CLUBS))
-
-        class Card(MotorMongoModel):
-            id = fields.EmbeddedDocumentField(CardIdentity, primary_key=True)
-            flavor = fields.CharField()
-
-        class Hand(MotorMongoModel):
-            cards = fields.ListField(fields.ReferenceField(Card))
-
-        cards = [
-            await Card(CardIdentity(4, CardIdentity.CLUBS)).save(),
-            await Card(CardIdentity(12, CardIdentity.SPADES)).save()
-        ]
-        hand = await Hand(cards).save()
-        await hand.refresh_from_db()
-        await dereference(hand)
-        self.assertIsInstance(hand.cards[0], Card)
-        self.assertIsInstance(hand.cards[1], Card)
-    '''
-
     async def _test_unhashable_id(self, final_value=True):
         # Test that we can reference a model whose id type is unhashable
         # e.g. a dict, list, etc.
