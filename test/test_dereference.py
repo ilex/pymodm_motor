@@ -1,7 +1,6 @@
 import unittest
 
-from collections import OrderedDict
-from bson import ObjectId, DBRef
+from bson import ObjectId
 
 from pymodm_motor import MotorMongoModel, MotorEmbeddedMongoModel, fields
 from pymodm_motor.context_managers import no_auto_dereference
@@ -150,8 +149,9 @@ class MotorDereferenceTestCase:
             wrapper_list.wrapper[0].comments[0].post.title
         )
 
+    '''
     @unittest_run_loop
-    async def test_unhashable_id(self):
+    async def _test_unhashable_id(self):
         # Test that we can reference a model whose id type is unhashable
         # e.g. a dict, list, etc.
         class CardIdentity(MotorEmbeddedMongoModel):
@@ -177,6 +177,57 @@ class MotorDereferenceTestCase:
         await dereference(hand)
         self.assertIsInstance(hand.cards[0], Card)
         self.assertIsInstance(hand.cards[1], Card)
+    '''
+
+    async def _test_unhashable_id(self, final_value=True):
+        # Test that we can reference a model whose id type is unhashable
+        # e.g. a dict, list, etc.
+        class CardIdentity(MotorEmbeddedMongoModel):
+            HEARTS, DIAMONDS, SPADES, CLUBS = 0, 1, 2, 3
+
+            rank = fields.IntegerField(min_value=0, max_value=12)
+            suit = fields.IntegerField(
+                choices=(HEARTS, DIAMONDS, SPADES, CLUBS))
+
+            class Meta:
+                final = final_value
+
+        class Card(MotorMongoModel):
+            id = fields.EmbeddedDocumentField(CardIdentity, primary_key=True)
+            flavor = fields.CharField()
+
+        class Hand(MotorMongoModel):
+            cards = fields.ListField(fields.ReferenceField(Card))
+
+        cards = [
+            await Card(CardIdentity(4, CardIdentity.CLUBS)).save(),
+            await Card(CardIdentity(12, CardIdentity.SPADES)).save()
+        ]
+        hand = await Hand(cards).save()
+
+        # test auto dereferencing
+        # note that pymodm_motor hasn't auto dereferencing
+        await hand.refresh_from_db()
+        self.assertIsInstance(hand.cards[0], CardIdentity)
+        self.assertEqual(hand.cards[0].rank, 4)
+        self.assertIsInstance(hand.cards[1], CardIdentity)
+        self.assertEqual(hand.cards[1].rank, 12)
+
+        with no_auto_dereference(hand):
+            await hand.refresh_from_db()
+            await dereference(hand)
+            self.assertIsInstance(hand.cards[0], Card)
+            self.assertEqual(hand.cards[0].id.rank, 4)
+            self.assertIsInstance(hand.cards[1], Card)
+            self.assertEqual(hand.cards[1].id.rank, 12)
+
+    @unittest_run_loop
+    async def test_unhashable_id_final_true(self):
+        await self._test_unhashable_id(final_value=True)
+
+    @unittest_run_loop
+    async def test_unhashable_id_final_false(self):
+        await self._test_unhashable_id(final_value=False)
 
     @unittest_run_loop
     async def test_reference_not_found(self):
@@ -281,30 +332,6 @@ class MotorDereferenceTestCase:
             await dereference(comment)
             self.assertIsInstance(comment.post, Post)
             self.assertIsInstance(comment.user, User)
-
-    @unittest_run_loop
-    async def test_dereference_dbrefs(self):
-        class User(MotorMongoModel):
-            post = fields.DictField()
-            posts = fields.OrderedDictField()
-
-        post = await Post(title='title1').save()
-        collection_name = Post._mongometa.collection_name
-
-        post_value = {
-            'dbref': DBRef(id=post.title, collection=collection_name)
-        }
-        posts_value = OrderedDict([('dbref', [post_value['dbref'], ])])
-
-        user = await User(post=post_value, posts=posts_value).save()
-
-        await user.refresh_from_db()
-        with no_auto_dereference(user):
-            await dereference(user)
-            self.assertIsInstance(user.post['dbref'], dict)
-            self.assertEqual(user.post['dbref']['_id'], post.title)
-            self.assertIsInstance(user.posts['dbref'][0], dict)
-            self.assertEqual(user.posts['dbref'][0]['_id'], post.title)
 
     @unittest_run_loop
     async def test_dereference_missed_reference_field(self):

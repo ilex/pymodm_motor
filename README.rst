@@ -29,7 +29,7 @@ Install
 
 At this moment you need to install ``pymodm`` as follow::
 
-    pip install https://github.com/ilex/pymodm/archive/fix_dereference.zip
+    pip install https://github.com/mongodb/pymodm/archive/master.zip
 
 And then install ``PyMODM_Motor`` using ``pip``::
     

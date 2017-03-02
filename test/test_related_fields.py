@@ -62,7 +62,7 @@ class MotorRelatedFieldsTestCase:
 
     def test_assign_id_to_reference_field(self):
         # No ValidationError raised.
-        Comment(post=1234).full_clean()
+        Comment(post="58b477046e32ab215dca2b57").full_clean()
 
     @unittest_run_loop
     async def test_validate_embedded_document(self):
@@ -96,7 +96,7 @@ class MotorRelatedFieldsTestCase:
         message = cm.exception.message
         self.assertIn('post', message)
         self.assertEqual(
-            ['Referenced documents must be saved to the database first.'],
+            ['Referenced Models must be saved to the database first.'],
             message['post'])
 
         # Cannot save document when reference is unresolved.
@@ -104,7 +104,7 @@ class MotorRelatedFieldsTestCase:
             await comment.save()
         self.assertIn('post', message)
         self.assertEqual(
-            ['Referenced documents must be saved to the database first.'],
+            ['Referenced Models must be saved to the database first.'],
             message['post'])
 
     @unittest_run_loop
