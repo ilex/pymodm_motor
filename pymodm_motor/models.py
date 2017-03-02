@@ -55,18 +55,18 @@ class MotorMongoModelMetaclass(TopLevelMongoModelMetaclass):
 class MotorMongoModel(MongoModel, metaclass=MotorMongoModelMetaclass):
     """Base class for all top-level models.
 
-    A MongoModel definition typically includes a number of field instances
-    and possibly a ``Meta`` class attribute that provides metadata or settings
-    specific to the model.
+    A MotorMongoModel definition typically includes a number of field
+    instances and possibly a ``Meta`` class attribute that provides metadata
+    or settings specific to the model.
 
-    MongoModels can be instantiated either with positional or keyword
+    MotorMongoModels can be instantiated either with positional or keyword
     arguments. Positional arguments are bound to the fields in the order the
     fields are defined on the model. Keyword argument names are the same as
     the names of the fields::
 
         from pymongo.read_preferences import ReadPreference
 
-        class User(MongoModel):
+        class User(MotorMongoModel):
             email = fields.EmailField(primary_key=True)
             name = fields.CharField()
 
@@ -92,9 +92,10 @@ class MotorMongoModel(MongoModel, metaclass=MotorMongoModelMetaclass):
       - `final`: Whether to restrict inheritance on this model. If ``True``,
         the ``_cls`` field will not be stored in the document. ``False`` by
         default.
-      - `cascade`: If ``True``, save all :class:`~pymodm.MongoModel` instances
-        this object references when :meth:`~pymodm.MongoModel.save` is called
-        on this object.
+      - `cascade`: If ``True``, save all
+        :class:`~pymodm_motor.MotorMongoModel`instances
+        this object references when :meth:`~pymodm_motor.MotorMongoModel.save`
+        is called on this object.
       - `read_preference`: The
         :class:`~pymongo.read_preferences.ReadPreference` to use when reading
         documents.
@@ -104,22 +105,24 @@ class MotorMongoModel(MongoModel, metaclass=MotorMongoModelMetaclass):
         use for write operations.
       - `indexes`: This is a list of :class:`~pymongo.operations.IndexModel`
         instances that describe the indexes that should be created for this
-        model. Note that indexes are NOT created when the class definition
+        model. Note that indexes are **NOT** created when the class definition
         is evaluated and should be created explicitly using
         :meth:``~pymodm_motor.queryset.MotorQuerySet.create_indexes``
         coroutine method.
 
-    .. note:: Creating an instance of MongoModel does not create a document in
-              the database.
+    .. note:: Creating an instance of MotorMongoModel does not create a
+              document in the database.
 
     """
 
     async def save(self, cascade=None, full_clean=True, force_insert=False):
-        """Coroutine to save this document into MongoDB.
+        """Save this document into MongoDB.
 
         If there is no value for the primary key on this Model instance, the
         instance will be inserted into MongoDB. Otherwise, the entire document
         will be replaced with this version (upserting if necessary).
+
+        .. note:: This method is a *coroutine*.
 
         :parameters:
           - `cascade`: If ``True``, all dereferenced MongoModels contained in
@@ -157,10 +160,16 @@ class MotorMongoModel(MongoModel, metaclass=MotorMongoModelMetaclass):
         return self
 
     async def delete(self):
+        """Delete this model.
+
+        .. note:: This method is a *coroutine*.
+        """
         await self._qs.delete()
 
     async def refresh_from_db(self, fields=None):
         """Reload this object from the database, overwriting local fields.
+
+        .. note:: This method is a *coroutine*.
 
         :parameters:
           - `fields`: An iterable of fields to reload. Defaults to all fields.

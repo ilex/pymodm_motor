@@ -214,6 +214,7 @@ These functions and methods are coroutines or return awaitable:
 - ``pymodm_motor.MotorQuerySet`` class:
 
   - ``pymodm_motor.MotorQuerySet.count``
+  - ``pymodm_motor.MotorQuerySet.aggregate``
   - ``pymodm_motor.MotorQuerySet.get``
   - ``pymodm_motor.MotorQuerySet.first``
   - ``pymodm_motor.MotorQuerySet.bulk_create``

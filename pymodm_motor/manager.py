@@ -1,4 +1,4 @@
-"""Async manager."""
+"""Asynchronous manager."""
 from pymodm.manager import Manager
 from .queryset import MotorQuerySet
 

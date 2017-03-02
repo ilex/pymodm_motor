@@ -16,12 +16,13 @@ def connect(mongodb_uri, alias=DEFAULT_CONNECTION_ALIAS,
 
     :parameters:
       - `mongodb_uri`: A MongoDB connection string. Any options may be passed
-        within the string that are supported by PyMongo. `mongodb_uri` must
+        within the string that are supported by Motor. `mongodb_uri` must
         specify a database, which will be used by any
-        :class:`~pymodm.MongoModel` that uses this connection.
+        :class:`~pymodm_motor.models.MotorMongoModel` that uses this
+        connection.
       - `alias`: An optional name for this connection, backed by a
-        :class:`~pymongo.mongo_client.MongoClient` instance that is cached
-        under this name. You can specify what connection a MongoModel uses by
+        `MotorClient` instance that is cached under this name.
+        You can specify what connection a MotorMongoModel uses by
         specifying the connection's alias via the `connection_alias` attribute
         inside their `Meta` class.  Switching connections is also possible
         using the :class:`~pymodm_motor.context_managers.switch_connection`

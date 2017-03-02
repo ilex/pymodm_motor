@@ -1,4 +1,4 @@
-"""Async QuerySet using motor."""
+"""Asynchronous QuerySet using Motor."""
 import sys
 import textwrap
 
@@ -21,6 +21,43 @@ class MotorQuerySet(QuerySet):
     """Motor QuerySet."""
 
     async def get(self, raw_query):
+        """Retrieve the object matching the given criteria.
+
+        .. note:: This method is a *coroutine*.
+
+        Raises `DoesNotExist` if no object was found.
+        Raises `MultipleObjectsReturned` if multiple objects were found.
+
+        Note that these exception types are specific to the model class
+        itself, so that it's possible to differentiate exceptions on the model
+        type:
+
+        .. code-block:: python
+
+            try:
+                user = await User.objects.get({'_id': user_id})
+                profile = await UserProfile.objects.get({'user': user.email})
+            except User.DoesNotExist:
+                # Handle User not existing.
+                return redirect_to_registration(user_id)
+            except UserProfile.DoesNotExist:
+                # User has not set up their profile.
+                return setup_user_profile(user_id)
+
+        These model-specific exceptions all inherit from exceptions of the
+        same name defined in the :mod:`~pymodm.errors` module, so you can
+        catch them all:
+
+        .. code-block:: python
+
+            try:
+                user = await User.objects.get({'_id': user_id})
+                profile = await UserProfile.objects.get({'user': user.email})
+            except errors.DoesNotExist:
+                # Either the User or UserProfile does not exist.
+                return redirect_to_404(user_id)
+
+        """
         results = self.raw(raw_query).__aiter__()
         try:
             first = await results.__anext__()
@@ -35,6 +72,10 @@ class MotorQuerySet(QuerySet):
         return first
 
     async def first(self):
+        """Return the first object from this MotorQuerySet.
+
+        .. note:: This method is a *coroutine*.
+        """
         try:
             return await self.limit(-1).__aiter__().__anext__()
         except StopAsyncIteration:
@@ -44,15 +85,17 @@ class MotorQuerySet(QuerySet):
                           full_clean=False):
         """Save Model instances in bulk.
 
+        .. note:: This method is a *coroutine*.
+
         :parameters:
           - `object_or_objects`: A list of MotorMongoModel instances or a
             single instance.
-          - `retrieve`: Whether to return the saved MongoModel
+          - `retrieve`: Whether to return the saved MotorMongoModel
             instances. If ``False`` (the default), only the ids will be
             returned.
           - `full_clean`: Whether to validate each object by calling
-            the :meth:`~pymodm.MongoModel.full_clean` method before saving.
-            This isn't done by default.
+            the :meth:`~pymodm_motor.MotorMongoModel.full_clean` method before
+            saving. This isn't done by default.
 
         :returns: A list of ids for the documents saved, or of the
                   :class:`~pymodm_motor.MotorMongoModel` instances themselves
@@ -89,8 +132,9 @@ class MotorQuerySet(QuerySet):
     async def delete(self):
         """Delete objects matched by this QuerySet.
 
-        :returns: The number of documents deleted.
+        .. note:: This method is a *coroutine*.
 
+        :returns: The number of documents deleted.
         """
         ReferenceField = _import('pymodm.fields.ReferenceField')
         if self._model._mongometa.delete_rules:
@@ -148,6 +192,8 @@ class MotorQuerySet(QuerySet):
 
     async def update(self, update, **kwargs):
         """Update the objects in this QuerySet and return the number updated.
+
+        .. note:: This method is a *coroutine*.
 
         :parameters:
           - `update`: The modifications to apply.
@@ -207,6 +253,16 @@ class MotorQuerySet(QuerySet):
     if PY_36:
         exec(textwrap.dedent("""
         async def to_list(self, dereference=False):
+            '''Return list of models for MotorQuerySet.
+
+            .. note:: This method is a *coroutine*.
+
+            :parameters:
+                - `dereference`: If ``True`` dereference models. ``False``
+                                 by default.
+
+            :returns: List of models.
+            '''
             if dereference:
                 return [await dereference_model(item) async for item in self]
 
@@ -215,6 +271,16 @@ class MotorQuerySet(QuerySet):
     else:  # python 3.5
         exec(textwrap.dedent("""
         async def to_list(self, dereference=False):
+            '''Return list of models for MotorQuerySet.
+
+            .. note:: This method is a *coroutine*.
+
+            :parameters:
+                - `dereference`: If ``True`` dereference models. ``False``
+                                 by default.
+
+            :returns: List of models.
+            '''
             lst = []
             if dereference:
                 async for item in self:
@@ -229,7 +295,9 @@ class MotorQuerySet(QuerySet):
     async def create_indexes(self):
         """Create model indexes if any.
 
-        Note that we wrap indexes into IndexesWrapper class.
+        .. note:: This method is a *coroutine*.
+
+        Note that indexes are wrapped into IndexesWrapper class.
         """
         meta = self._model._mongometa
         indexes = meta.indexes

@@ -1,4 +1,4 @@
-"""Async dereferencing."""
+"""Asynchronous dereferencing."""
 from collections import defaultdict, deque
 
 from .connection import _get_db
@@ -35,8 +35,10 @@ async def _resolve_references(database, reference_map):
 async def dereference(model_instance, fields=None):
     """Dereference ReferenceFields on a MotorMongoModel instance.
 
-    This function is handy for dereferencing many fields at once and is more
-    efficient than dereferencing one field at a time.
+    This coroutine function is handy for dereferencing many fields at once and
+    is more efficient than dereferencing one field at a time.
+
+    .. note:: This function is *coroutine*.
 
     :parameters:
       - `model_instance`: The MotorMongoModel instance.
@@ -67,6 +69,8 @@ async def dereference(model_instance, fields=None):
 
 async def dereference_id(model_class, model_id):
     """Dereference a single object by id.
+
+    .. note:: This function is *coroutine*.
 
     :parameters:
       - `model_class`: The class of a model to be dereferenced.
